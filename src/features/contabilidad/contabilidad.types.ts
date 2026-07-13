@@ -1,15 +1,17 @@
 export interface ExportacionContpaqiRead {
   id: string
-  sucursal_id: string
-  fecha_inicio: string // ISO date
-  fecha_fin: string // ISO date
+  periodo_inicio: string // ISO date
+  periodo_fin: string // ISO date
+  notas?: string
+  estatus: string
+  archivo_nombre?: string
+  total_registros?: number
   generado_por_id: string
   creado_en: string
-  url_archivo?: string
 }
 
 export interface ExportarRequest {
-  sucursal_id: string
-  fecha_inicio: string
-  fecha_fin: string
+  periodo_inicio: string
+  periodo_fin: string
+  notas?: string
 }
