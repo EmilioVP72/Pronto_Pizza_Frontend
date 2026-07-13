@@ -124,25 +124,89 @@ export const LoginPage = () => {
 
             {/* Dev Login Bypass para ver funcionalidades rápidamente */}
             {import.meta.env.DEV && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full mt-2 border-primary text-primary hover:bg-primary/10"
-                onClick={() => {
-                  setAuth({
-                    id: '33333333-3333-3333-3333-333333333333',
-                    nombre_completo: 'Admin Pronto Pizza',
-                    email: 'admin@prontopizza.com',
-                    sucursal_id: '22222222-2222-2222-2222-222222222222',
-                    sucursal_nombre: 'Comisariato Matriz',
-                    sucursal_codigo: 'MTZ',
-                    rol: 'administrador'
-                  }, 'dummy-dev-token')
-                  navigate('/')
-                }}
-              >
-                Entrar como Admin (Dev Bypass)
-              </Button>
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
+                <p className="text-xs text-center text-muted-foreground font-semibold">Bypass de Desarrollo (Sin contraseña)</p>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full border-primary text-primary hover:bg-primary/10"
+                  onClick={() => {
+                    setAuth({
+                      id: '33333333-3333-3333-3333-333333333333',
+                      nombre_completo: 'Admin Pronto Pizza',
+                      email: 'admin@prontopizza.com',
+                      sucursal_id: '22222222-2222-2222-2222-222222222222',
+                      sucursal_nombre: 'Comisariato Matriz',
+                      sucursal_codigo: 'MTZ',
+                      rol: 'administrador'
+                    }, 'dummy-dev-token')
+                    navigate('/')
+                  }}
+                >
+                  👑 Administrador
+                </Button>
+
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                  onClick={() => {
+                    setAuth({
+                      id: '00000000-0000-0000-0000-000000000001',
+                      nombre_completo: 'Encargado Norte',
+                      email: 'encargado.norte@prontopizza.com',
+                      sucursal_id: '00000000-0000-0000-0000-000000000002',
+                      sucursal_nombre: 'Sucursal Norte',
+                      sucursal_codigo: 'NOR',
+                      rol: 'encargado_sucursal'
+                    }, 'dummy-dev-token|encargado.norte@prontopizza.com')
+                    navigate('/')
+                  }}
+                >
+                  🏪 Encargado de Sucursal
+                </Button>
+
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full border-orange-500 text-orange-500 hover:bg-orange-500/10"
+                  onClick={() => {
+                    setAuth({
+                      id: '00000000-0000-0000-0000-000000000002',
+                      nombre_completo: 'Almacenista Central',
+                      email: 'almacenista@prontopizza.com',
+                      sucursal_id: '22222222-2222-2222-2222-222222222222',
+                      sucursal_nombre: 'Comisariato Matriz',
+                      sucursal_codigo: 'MTZ',
+                      rol: 'almacenista'
+                    }, 'dummy-dev-token|almacenista@prontopizza.com')
+                    navigate('/')
+                  }}
+                >
+                  📦 Almacenista
+                </Button>
+
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full border-green-500 text-green-500 hover:bg-green-500/10"
+                  onClick={() => {
+                    setAuth({
+                      id: '00000000-0000-0000-0000-000000000003',
+                      nombre_completo: 'Contador General',
+                      email: 'contador@prontopizza.com',
+                      sucursal_id: '22222222-2222-2222-2222-222222222222',
+                      sucursal_nombre: 'Comisariato Matriz',
+                      sucursal_codigo: 'MTZ',
+                      rol: 'contador'
+                    }, 'dummy-dev-token|contador@prontopizza.com')
+                    navigate('/')
+                  }}
+                >
+                  🧾 Contador
+                </Button>
+              </div>
             )}
           </form>
         </Form>

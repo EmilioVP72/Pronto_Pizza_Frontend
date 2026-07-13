@@ -13,7 +13,7 @@ export const useUsuarios = (page = 1, size = 20) => {
   return useQuery({
     queryKey: usuariosKeys.list({ page, size }),
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<UsuarioRead>>('/usuarios/', {
+      const { data } = await api.get<PaginatedResponse<UsuarioRead>>('/organizacion/usuarios', {
         params: { page, size },
       })
       return data
