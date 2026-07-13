@@ -1,0 +1,19 @@
+export interface UsuarioRead {
+  id: string
+  nombre_completo: string
+  email: string
+  sucursal_id: string
+  sucursal_nombre: string
+  rol_id: number
+  rol_nombre: string
+  activo: boolean
+  creado_en: string
+}
+
+export interface UsuarioCreate {
+  nombre_completo: string
+  email: string
+  password?: string
+  rol_id: number
+  sucursal_id: string
+}
