@@ -62,7 +62,7 @@ export const LoginPage = () => {
       // The context says: backend verifies JWT, extracts sub, gets user.
       // So we call a generic endpoint or a "me" endpoint. Let's assume /api/v1/usuarios/me exists.
       
-      const response = await api.get('/usuarios/me', {
+      const response = await api.get('/organizacion/usuarios/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
       
@@ -145,66 +145,6 @@ export const LoginPage = () => {
                   }}
                 >
                   👑 Administrador
-                </Button>
-
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full border-blue-500 text-blue-500 hover:bg-blue-500/10"
-                  onClick={() => {
-                    setAuth({
-                      id: '00000000-0000-0000-0000-000000000001',
-                      nombre_completo: 'Encargado Norte',
-                      email: 'encargado.norte@prontopizza.com',
-                      sucursal_id: '00000000-0000-0000-0000-000000000002',
-                      sucursal_nombre: 'Sucursal Norte',
-                      sucursal_codigo: 'NOR',
-                      rol: 'encargado_sucursal'
-                    }, 'dummy-dev-token|encargado.norte@prontopizza.com')
-                    navigate('/')
-                  }}
-                >
-                  🏪 Encargado de Sucursal
-                </Button>
-
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full border-orange-500 text-orange-500 hover:bg-orange-500/10"
-                  onClick={() => {
-                    setAuth({
-                      id: '00000000-0000-0000-0000-000000000002',
-                      nombre_completo: 'Almacenista Central',
-                      email: 'almacenista@prontopizza.com',
-                      sucursal_id: '22222222-2222-2222-2222-222222222222',
-                      sucursal_nombre: 'Comisariato Matriz',
-                      sucursal_codigo: 'MTZ',
-                      rol: 'almacenista'
-                    }, 'dummy-dev-token|almacenista@prontopizza.com')
-                    navigate('/')
-                  }}
-                >
-                  📦 Almacenista
-                </Button>
-
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full border-green-500 text-green-500 hover:bg-green-500/10"
-                  onClick={() => {
-                    setAuth({
-                      id: '00000000-0000-0000-0000-000000000003',
-                      nombre_completo: 'Contador General',
-                      email: 'contador@prontopizza.com',
-                      sucursal_id: '22222222-2222-2222-2222-222222222222',
-                      sucursal_nombre: 'Comisariato Matriz',
-                      sucursal_codigo: 'MTZ',
-                      rol: 'contador'
-                    }, 'dummy-dev-token|contador@prontopizza.com')
-                    navigate('/')
-                  }}
-                >
-                  🧾 Contador
                 </Button>
               </div>
             )}
