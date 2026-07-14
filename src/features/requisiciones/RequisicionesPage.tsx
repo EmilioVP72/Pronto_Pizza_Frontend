@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Plus } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
+import { api } from '@/lib/axios'
 import { useRequisiciones } from './useRequisiciones'
 import type { RequisicionRead } from './requisiciones.types'
 import { PageHeader } from '@/components/shared/PageHeader'
@@ -13,7 +14,55 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { usePermissions } from '@/hooks/usePermissions'
 import { NuevaRequisicionForm } from './NuevaRequisicionForm'
 
-const columns: ColumnDef<RequisicionRead>[] = [
+import { useAuthStore } from '@/stores/authStore'
+import { CheckCircle, Truck, PackageCheck, Ban } from 'lucide-react'
+
+const RequisicionActions = ({ requisicion, onStatusChange }: { requisicion: RequisicionRead, onStatusChange: () => void }) => {
+  const user = useAuthStore((s) => s.user)
+  const [loading, setLoading] = useState(false)
+
+  const handleAction = async (action: string) => {
+    try {
+      setLoading(true)
+      await api.patch(`/requisiciones/${requisicion.id}/${action}`)
+      onStatusChange()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="flex gap-2 items-center">
+      <Link to={`/requisiciones/${requisicion.id}`}>
+        <Button variant="outline" size="sm">Detalles</Button>
+      </Link>
+      
+      {/* Almacenista Actions */}
+      {['almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'enviada' && (
+        <Button variant="default" size="sm" onClick={() => handleAction('aprobar')} disabled={loading}>
+          <CheckCircle className="w-4 h-4 mr-1" /> Aprobar
+        </Button>
+      )}
+      
+      {['almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'aprobada' && (
+        <Button variant="secondary" size="sm" className="bg-orange-500 text-white hover:bg-orange-600" onClick={() => handleAction('surtir')} disabled={loading}>
+          <Truck className="w-4 h-4 mr-1" /> Surtir
+        </Button>
+      )}
+
+      {/* Encargado Actions */}
+      {['encargado_sucursal', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'surtida' && (
+        <Button variant="default" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => handleAction('cerrar')} disabled={loading}>
+          <PackageCheck className="w-4 h-4 mr-1" /> Recibido
+        </Button>
+      )}
+    </div>
+  )
+}
+
+const columns = (onStatusChange: () => void): ColumnDef<RequisicionRead>[] => [
   {
     accessorKey: 'folio',
     header: 'Folio',
@@ -33,12 +82,17 @@ const columns: ColumnDef<RequisicionRead>[] = [
     header: 'Estatus',
     cell: ({ row }) => <StatusBadge estatus={row.original.estatus} />,
   },
+  {
+    id: 'acciones',
+    header: 'Acciones',
+    cell: ({ row }) => <RequisicionActions requisicion={row.original} onStatusChange={onStatusChange} />
+  }
 ]
 
 export default function RequisicionesPage() {
   const [page, setPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { data, isLoading } = useRequisiciones(page)
+  const { data, isLoading, refetch } = useRequisiciones(page)
   const { canCreateRequisicion } = usePermissions()
 
   return (
@@ -59,14 +113,17 @@ export default function RequisicionesPage() {
                 <DialogHeader>
                   <DialogTitle>Levantar Requisición</DialogTitle>
                 </DialogHeader>
-                <NuevaRequisicionForm onSuccess={() => setIsModalOpen(false)} />
+                <NuevaRequisicionForm onSuccess={() => {
+                  setIsModalOpen(false)
+                  refetch()
+                }} />
               </DialogContent>
             </Dialog>
           )
         }
       />
       <DataTable
-        columns={columns}
+        columns={columns(() => refetch())}
         data={data?.items || []}
         pageCount={data?.pages}
         pageIndex={page - 1}

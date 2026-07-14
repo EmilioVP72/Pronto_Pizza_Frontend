@@ -26,4 +26,5 @@ export interface ProductoBajoMinimoRead {
   producto_nombre: string
   cantidad_actual: string
   punto_reorden: string
+  stock_maximo: string
 }

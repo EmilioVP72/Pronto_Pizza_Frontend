@@ -12,7 +12,59 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { usePermissions } from '@/hooks/usePermissions'
 import { NuevaOrdenForm } from './NuevaOrdenForm'
 
-const columns: ColumnDef<OrdenProduccionRead>[] = [
+import { useAuthStore } from '@/stores/authStore'
+import { Printer, CheckCircle, Info } from 'lucide-react'
+import { api } from '@/lib/axios'
+
+const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRead, onStatusChange: () => void }) => {
+  const user = useAuthStore((s) => s.user)
+  const [loading, setLoading] = useState(false)
+
+  const handleCompletar = async () => {
+    const qtyStr = window.prompt(`Ingrese la cantidad real producida para el folio ${orden.folio}:`, "1")
+    if (!qtyStr) return
+    const cantidad_real = parseFloat(qtyStr)
+    if (isNaN(cantidad_real) || cantidad_real <= 0) {
+      alert("Cantidad inválida")
+      return
+    }
+
+    try {
+      setLoading(true)
+      await api.patch(`/produccion/ordenes/${orden.id}/completar`, {
+        cantidad_real,
+        notas: "Completado vía UI"
+      })
+      onStatusChange()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePrint = () => {
+    alert(`Imprimiendo Etiqueta para Lote: ${orden.folio}...`)
+  }
+
+  return (
+    <div className="flex gap-2 items-center">
+      {['almacenista', 'administrador'].includes(user?.rol || '') && orden.estatus === 'programada' && (
+        <Button variant="default" size="sm" onClick={handleCompletar} disabled={loading}>
+          <CheckCircle className="w-4 h-4 mr-1" /> Finalizar Lote
+        </Button>
+      )}
+
+      {orden.estatus === 'completada' && (
+        <Button variant="outline" size="sm" onClick={handlePrint} disabled={loading}>
+          <Printer className="w-4 h-4 mr-1" /> Imprimir Etiqueta
+        </Button>
+      )}
+    </div>
+  )
+}
+
+const columns = (onStatusChange: () => void): ColumnDef<OrdenProduccionRead>[] => [
   {
     accessorKey: 'folio',
     header: 'Folio',
@@ -36,12 +88,17 @@ const columns: ColumnDef<OrdenProduccionRead>[] = [
     header: 'Estatus',
     cell: ({ row }) => <StatusBadge estatus={row.original.estatus} />,
   },
+  {
+    id: 'acciones',
+    header: 'Acciones',
+    cell: ({ row }) => <ProduccionActions orden={row.original} onStatusChange={onStatusChange} />
+  }
 ]
 
 export default function OrdenesProduccionPage() {
   const [page, setPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { data, isLoading } = useOrdenesProduccion(page)
+  const { data, isLoading, refetch } = useOrdenesProduccion(page)
   // Check if user is in Matriz/Comisariato and has permissions, handled loosely for now
   const canCreate = true 
 
@@ -63,14 +120,17 @@ export default function OrdenesProduccionPage() {
                 <DialogHeader>
                   <DialogTitle>Programar Orden de Producción</DialogTitle>
                 </DialogHeader>
-                <NuevaOrdenForm onSuccess={() => setIsModalOpen(false)} />
+                <NuevaOrdenForm onSuccess={() => {
+                  setIsModalOpen(false)
+                  refetch()
+                }} />
               </DialogContent>
             </Dialog>
           )
         }
       />
       <DataTable
-        columns={columns}
+        columns={columns(() => refetch())}
         data={data?.items || []}
         pageCount={data?.pages}
         pageIndex={page - 1}

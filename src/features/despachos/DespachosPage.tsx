@@ -13,7 +13,50 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { usePermissions } from '@/hooks/usePermissions'
 import { NuevoDespachoForm } from './NuevoDespachoForm'
 
-const columns: ColumnDef<DespachoRead>[] = [
+import { useAuthStore } from '@/stores/authStore'
+import { Printer, Send, Info } from 'lucide-react'
+import { api } from '@/lib/axios'
+
+const DespachoActions = ({ despacho, onStatusChange }: { despacho: DespachoRead, onStatusChange: () => void }) => {
+  const user = useAuthStore((s) => s.user)
+  const [loading, setLoading] = useState(false)
+
+  const handleCompletar = async () => {
+    try {
+      setLoading(true)
+      await api.patch(`/despachos/${despacho.id}/completar`)
+      onStatusChange()
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePrint = () => {
+    alert(`Imprimiendo ${despacho.tipo_documento} (Folio: ${despacho.folio})...`)
+  }
+
+  return (
+    <div className="flex gap-2 items-center">
+      <Link to={`/despachos/${despacho.id}`}>
+        <Button variant="outline" size="sm"><Info className="w-4 h-4" /></Button>
+      </Link>
+
+      <Button variant="outline" size="sm" onClick={handlePrint}>
+        <Printer className="w-4 h-4" />
+      </Button>
+
+      {['almacenista', 'administrador'].includes(user?.rol || '') && despacho.estatus === 'pendiente' && (
+        <Button variant="default" size="sm" onClick={handleCompletar} disabled={loading}>
+          <Send className="w-4 h-4 mr-1" /> Completar
+        </Button>
+      )}
+    </div>
+  )
+}
+
+const columns = (onStatusChange: () => void): ColumnDef<DespachoRead>[] => [
   {
     accessorKey: 'folio',
     header: 'Folio',
@@ -38,12 +81,17 @@ const columns: ColumnDef<DespachoRead>[] = [
     header: 'Estatus',
     cell: ({ row }) => <StatusBadge estatus={row.original.estatus} />,
   },
+  {
+    id: 'acciones',
+    header: 'Acciones',
+    cell: ({ row }) => <DespachoActions despacho={row.original} onStatusChange={onStatusChange} />
+  }
 ]
 
 export default function DespachosPage() {
   const [page, setPage] = useState(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { data, isLoading } = useDespachos(page)
+  const { data, isLoading, refetch } = useDespachos(page)
   const { canDispatch } = usePermissions()
 
   return (
@@ -64,14 +112,17 @@ export default function DespachosPage() {
                 <DialogHeader>
                   <DialogTitle>Registrar Nuevo Despacho</DialogTitle>
                 </DialogHeader>
-                <NuevoDespachoForm onSuccess={() => setIsModalOpen(false)} />
+                <NuevoDespachoForm onSuccess={() => {
+                  setIsModalOpen(false)
+                  refetch()
+                }} />
               </DialogContent>
             </Dialog>
           )
         }
       />
       <DataTable
-        columns={columns}
+        columns={columns(() => refetch())}
         data={data?.items || []}
         pageCount={data?.pages}
         pageIndex={page - 1}
