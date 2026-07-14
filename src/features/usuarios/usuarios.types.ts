@@ -3,9 +3,9 @@ export interface UsuarioRead {
   nombre_completo: string
   email: string
   sucursal_id: string
-  sucursal_nombre: string
+  sucursal?: { nombre: string }
   rol_id: number
-  rol_nombre: string
+  rol?: { nombre: string }
   activo: boolean
   creado_en: string
 }

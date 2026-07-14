@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Users, Edit, Trash } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { useUsuarios } from './useUsuarios'
@@ -23,18 +23,33 @@ const columns: ColumnDef<UsuarioRead>[] = [
     header: 'Email',
   },
   {
-    accessorKey: 'sucursal_nombre',
+    accessorKey: 'sucursal.nombre',
     header: 'Sucursal',
+    cell: ({ row }) => <span>{row.original.sucursal?.nombre || 'Sin sucursal'}</span>,
   },
   {
-    accessorKey: 'rol_nombre',
+    accessorKey: 'rol.nombre',
     header: 'Rol',
-    cell: ({ row }) => <StatusBadge estatus={row.original.rol_nombre || 'N/A'} />,
+    cell: ({ row }) => <StatusBadge estatus={row.original.rol?.nombre || 'N/A'} />,
   },
   {
     accessorKey: 'activo',
     header: 'Estatus',
     cell: ({ row }) => <StatusBadge estatus={row.original.activo ? 'activo' : 'inactivo'} />,
+  },
+  {
+    id: 'acciones',
+    header: 'Acciones',
+    cell: ({ row }) => (
+      <div className="flex gap-2">
+        <Button variant="ghost" size="icon" onClick={() => console.log('Editar', row.original.id)}>
+          <Edit className="h-4 w-4" />
+        </Button>
+        <Button variant="ghost" size="icon" className="text-destructive" onClick={() => console.log('Eliminar', row.original.id)}>
+          <Trash className="h-4 w-4" />
+        </Button>
+      </div>
+    ),
   },
 ]
 
