@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -22,6 +24,7 @@ export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
   const { mutate, isPending } = useCrearUsuario()
   const { data: roles, isLoading: loadingRoles } = useRoles()
   const { data: sucursales, isLoading: loadingSuc } = useSucursales()
+  const [error, setError] = useState<string | null>(null)
   
   const form = useForm<FormValues>({ 
     resolver: zodResolver(schema),
@@ -33,13 +36,30 @@ export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
   })
 
   const onSubmit = (values: FormValues) => {
-    mutate(values, { onSuccess })
+    setError(null)
+    mutate(values, { 
+      onSuccess: () => {
+        toast.success('Usuario creado exitosamente')
+        onSuccess()
+      },
+      onError: (err: any) => {
+        const errorMsg = err.response?.data?.detail || err.message || 'Error al crear el usuario'
+        setError(errorMsg)
+        toast.error('Ocurrió un error al crear el usuario')
+      }
+    })
   }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         
+        {error && (
+          <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md">
+            {error}
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="nombre_completo"
@@ -90,7 +110,7 @@ export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Rol en el Sistema</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value?.toString()}>
+                <Select onValueChange={field.onChange} value={field.value ? field.value.toString() : undefined}>
                   <FormControl>
                     <SelectTrigger disabled={loadingRoles}>
                       <SelectValue placeholder="Seleccionar rol..." />
@@ -112,7 +132,7 @@ export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Sucursal de Asignación</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value ? field.value.toString() : undefined}>
                   <FormControl>
                     <SelectTrigger disabled={loadingSuc}>
                       <SelectValue placeholder="Seleccionar sucursal..." />
