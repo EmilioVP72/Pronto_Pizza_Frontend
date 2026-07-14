@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { api } from '@/lib/axios'
-import type { UsuarioRead, UsuarioCreate } from './usuarios.types'
+import type { UsuarioRead, UsuarioCreate, UsuarioUpdate } from './usuarios.types'
 import type { PaginatedResponse } from '@/types/api'
 
 export const usuariosKeys = {
@@ -25,11 +26,48 @@ export const useCrearUsuario = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: UsuarioCreate) => {
-      const { data } = await api.post<UsuarioRead>('/usuarios/', payload)
+      const { data } = await api.post<UsuarioRead>('/organizacion/usuarios', payload)
       return data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: usuariosKeys.lists() })
+      toast.success('Usuario creado exitosamente')
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al crear usuario')
+    }
+  })
+}
+
+export const useEditarUsuario = (id: string) => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: UsuarioUpdate) => {
+      const { data } = await api.patch<UsuarioRead>(`/organizacion/usuarios/${id}`, payload)
+      return data
+    },
+    onSuccess: () => {
+      toast.success('Usuario actualizado exitosamente')
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al actualizar usuario')
+    }
+  })
+}
+
+export const useEliminarUsuario = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/organizacion/usuarios/${id}`)
+    },
+    onSuccess: () => {
+      toast.success('Usuario eliminado exitosamente')
+      queryClient.invalidateQueries({ queryKey: ['usuarios'] })
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al eliminar usuario')
+    }
   })
 }

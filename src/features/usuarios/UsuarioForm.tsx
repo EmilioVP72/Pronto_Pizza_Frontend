@@ -7,45 +7,53 @@ import { Button } from '@/components/ui/button'
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useCrearUsuario } from './useUsuarios'
+import { useCrearUsuario, useEditarUsuario } from './useUsuarios'
+import type { UsuarioRead } from './usuarios.types'
 import { useRoles, useSucursales } from '@/features/shared/useCatalogos'
 
-const schema = z.object({
+const schema = (isEdit: boolean) => z.object({
   nombre_completo: z.string().min(3, 'Mínimo 3 caracteres'),
   email: z.string().email('Correo electrónico inválido'),
-  password: z.string().min(6, 'Contraseña de mínimo 6 caracteres'),
+  password: isEdit ? z.string().optional() : z.string().min(6, 'Contraseña de mínimo 6 caracteres'),
   rol_id: z.coerce.number().min(1, 'Selecciona un rol'),
   sucursal_id: z.string().uuid('Selecciona una sucursal'),
 })
 
-type FormValues = z.infer<typeof schema>
+type FormValues = z.infer<ReturnType<typeof schema>>
 
-export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
-  const { mutate, isPending } = useCrearUsuario()
+export const UsuarioForm = ({ onSuccess, usuario }: { onSuccess: () => void, usuario?: UsuarioRead }) => {
+  const isEdit = !!usuario
+  const { mutate: mutateCrear, isPending: isPendingCrear } = useCrearUsuario()
+  const { mutate: mutateEditar, isPending: isPendingEditar } = useEditarUsuario(usuario?.id || '')
+  
+  const isPending = isPendingCrear || isPendingEditar
   const { data: roles, isLoading: loadingRoles } = useRoles()
   const { data: sucursales, isLoading: loadingSuc } = useSucursales()
   const [error, setError] = useState<string | null>(null)
   
   const form = useForm<FormValues>({ 
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema(isEdit)),
     defaultValues: {
-      nombre_completo: '',
-      email: '',
+      nombre_completo: usuario?.nombre_completo || '',
+      email: usuario?.email || '',
       password: '',
+      rol_id: usuario?.rol_id || 0,
+      sucursal_id: usuario?.sucursal_id || ''
     }
   })
 
   const onSubmit = (values: FormValues) => {
     setError(null)
-    mutate(values, { 
+    const mutate = isEdit ? mutateEditar : mutateCrear
+    const payload = isEdit && !values.password ? { ...values, password: undefined } : values
+
+    mutate(payload as any, { 
       onSuccess: () => {
-        toast.success('Usuario creado exitosamente')
         onSuccess()
       },
       onError: (err: any) => {
-        const errorMsg = err.response?.data?.detail || err.message || 'Error al crear el usuario'
+        const errorMsg = err.response?.data?.detail || err.message || `Error al ${isEdit ? 'actualizar' : 'crear'} el usuario`
         setError(errorMsg)
-        toast.error('Ocurrió un error al crear el usuario')
       }
     })
   }
@@ -88,20 +96,20 @@ export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Contraseña Temporal</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{isEdit ? 'Nueva Contraseña (opcional)' : 'Contraseña Temporal'}</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
         <div className="grid grid-cols-2 gap-4">
           <FormField
@@ -152,7 +160,7 @@ export const UsuarioForm = ({ onSuccess }: { onSuccess: () => void }) => {
         
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isPending}>
-            {isPending ? 'Guardando...' : 'Crear Usuario'}
+            {isPending ? 'Guardando...' : (isEdit ? 'Actualizar Usuario' : 'Crear Usuario')}
           </Button>
         </div>
       </form>

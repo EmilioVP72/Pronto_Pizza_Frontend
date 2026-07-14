@@ -17,3 +17,5 @@ export interface UsuarioCreate {
   rol_id: number
   sucursal_id: string
 }
+
+export interface UsuarioUpdate extends Partial<UsuarioCreate> {}
