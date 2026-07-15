@@ -55,18 +55,24 @@ export const LoginPage = () => {
       if (!data.session) throw new Error('No se obtuvo sesión')
 
       const token = data.session.access_token
-      
-      // Get the user data from our backend using the token
-      // Wait, standard approach: fetch the user profile from /auth/me or similar, 
-      // but if we don't have it, we just decode or fetch from /api/v1/usuarios/me
-      // The context says: backend verifies JWT, extracts sub, gets user.
-      // So we call a generic endpoint or a "me" endpoint. Let's assume /api/v1/usuarios/me exists.
-      
+
+      // Fetch the full user profile from our backend
       const response = await api.get('/organizacion/usuarios/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
-      setAuth(response.data, token)
+
+      // Backend returns nested objects: rol: { nombre, id }, sucursal: { nombre, codigo, id }
+      // AuthStore expects flat fields, so we map them here
+      const raw = response.data
+      setAuth({
+        id: raw.id,
+        nombre_completo: raw.nombre_completo,
+        email: raw.email,
+        sucursal_id: raw.sucursal_id,
+        sucursal_nombre: raw.sucursal?.nombre ?? '',
+        sucursal_codigo: raw.sucursal?.codigo ?? '',
+        rol: raw.rol?.nombre ?? '',
+      }, token)
       navigate('/')
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión')
