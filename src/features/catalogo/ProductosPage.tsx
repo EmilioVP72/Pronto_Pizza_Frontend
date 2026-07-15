@@ -1,14 +1,14 @@
 import { useState } from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Edit, Trash } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { useProductos, useEliminarProducto } from './useCatalogo'
+import { useCategorias, useUnidadesMedida } from '@/features/shared/useCatalogos'
 import type { ProductoRead } from './catalogo.types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable } from '@/components/shared/DataTable'
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ProductoForm } from './ProductoForm'
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
@@ -16,7 +16,9 @@ const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
 const getColumns = (
   onEdit: (producto: ProductoRead) => void,
-  onDelete: (id: string) => void
+  onDelete: (id: string) => void,
+  categorias: any[],
+  unidades: any[]
 ): ColumnDef<ProductoRead>[] => [
   {
     accessorKey: 'codigo_interno',
@@ -25,6 +27,22 @@ const getColumns = (
   {
     accessorKey: 'nombre',
     header: 'Nombre',
+  },
+  {
+    accessorKey: 'categoria_id',
+    header: 'Categoría',
+    cell: ({ row }) => {
+      const cat = categorias?.find(c => c.id === row.original.categoria_id)
+      return cat ? cat.nombre : row.original.categoria_id
+    },
+  },
+  {
+    accessorKey: 'unidad_medida_id',
+    header: 'Unidad',
+    cell: ({ row }) => {
+      const uni = unidades?.find(u => u.id === row.original.unidad_medida_id)
+      return uni ? uni.abreviatura : row.original.unidad_medida_id
+    },
   },
   {
     accessorKey: 'tipo_producto',
@@ -40,30 +58,20 @@ const getColumns = (
   },
   {
     id: 'acciones',
+    header: 'Acciones',
     cell: ({ row }) => {
       const producto = row.original
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Abrir menú</span>
-              <MoreHorizontal className="h-4 w-4" />
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(producto)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          {producto.activo && (
+            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => onDelete(producto.id)}>
+              <Trash className="h-4 w-4" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => onEdit(producto)}>
-              <Pencil className="mr-2 h-4 w-4" />
-              Editar
-            </DropdownMenuItem>
-            {producto.activo && (
-              <DropdownMenuItem onClick={() => onDelete(producto.id)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Desactivar
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          )}
+        </div>
       )
     },
   },
@@ -76,6 +84,9 @@ export default function ProductosPage() {
   
   const { data, isLoading } = useProductos(page)
   const deleteMutation = useEliminarProducto()
+  
+  const { data: categorias } = useCategorias()
+  const { data: unidades } = useUnidadesMedida()
 
   const handleEdit = (producto: ProductoRead) => {
     setEditingProducto(producto)
@@ -93,7 +104,7 @@ export default function ProductosPage() {
     if (!open) setEditingProducto(null)
   }
 
-  const columns = getColumns(handleEdit, handleDelete)
+  const columns = getColumns(handleEdit, handleDelete, categorias || [], unidades || [])
 
   return (
     <div>
