@@ -11,40 +11,57 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useCategorias, useUnidadesMedida } from '@/features/shared/useCatalogos'
+import { useCrearProducto, useActualizarProducto } from './useCatalogo'
+import type { ProductoRead } from './catalogo.types'
 
 const schema = z.object({
   nombre: z.string().min(1, 'El nombre es requerido'),
-  codigo: z.string().min(1, 'El código es requerido'),
+  codigo_interno: z.string().min(1, 'El código es requerido'),
   categoria_id: z.coerce.number().min(1, 'Selecciona una categoría'),
   unidad_medida_id: z.coerce.number().min(1, 'Selecciona una unidad'),
-  es_insumo: z.boolean().default(false),
-  es_preparado: z.boolean().default(false),
-  es_venta: z.boolean().default(false),
+  tipo_producto: z.enum(['insumo', 'preparado', 'empaque', 'limpieza']),
 })
 
 type FormValues = z.infer<typeof schema>
 
-export function ProductoForm({ onSuccess }: { onSuccess: () => void }) {
+interface ProductoFormProps {
+  onSuccess: () => void
+  initialData?: ProductoRead | null
+}
+
+export function ProductoForm({ onSuccess, initialData }: ProductoFormProps) {
   const { data: categorias, isLoading: loadingCat } = useCategorias()
   const { data: unidades, isLoading: loadingUni } = useUnidadesMedida()
+  
+  const createMutation = useCrearProducto()
+  const updateMutation = useActualizarProducto()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      es_insumo: false,
-      es_preparado: false,
-      es_venta: false,
+      nombre: initialData?.nombre || '',
+      codigo_interno: initialData?.codigo_interno || '',
+      categoria_id: initialData?.categoria_id || 0,
+      unidad_medida_id: initialData?.unidad_medida_id || 0,
+      tipo_producto: (initialData?.tipo_producto as any) || 'insumo',
     },
   })
 
   const onSubmit = (values: FormValues) => {
-    // Aquí iría el mutate del hook useCrearProducto
-    console.log('Guardando producto:', values)
-    onSuccess()
+    if (initialData) {
+      updateMutation.mutate({ id: initialData.id, data: values }, {
+        onSuccess: () => onSuccess()
+      })
+    } else {
+      createMutation.mutate(values, {
+        onSuccess: () => onSuccess()
+      })
+    }
   }
+
+  const isPending = createMutation.isPending || updateMutation.isPending
 
   return (
     <Form {...form}>
@@ -52,7 +69,7 @@ export function ProductoForm({ onSuccess }: { onSuccess: () => void }) {
         <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
-            name="codigo"
+            name="codigo_interno"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Código Interno</FormLabel>
@@ -125,53 +142,37 @@ export function ProductoForm({ onSuccess }: { onSuccess: () => void }) {
           />
         </div>
 
-        <div className="flex gap-4">
+        <div className="grid grid-cols-1 gap-4 mt-4">
           <FormField
             control={form.control}
-            name="es_insumo"
+            name="tipo_producto"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 flex-1">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Es Insumo</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="es_preparado"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 flex-1">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Es Preparado</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="es_venta"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 flex-1">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Es Venta</FormLabel>
-                </div>
+              <FormItem>
+                <FormLabel>Tipo de Producto</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecciona..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="insumo">Insumo</SelectItem>
+                    <SelectItem value="preparado">Preparado / Terminado</SelectItem>
+                    <SelectItem value="empaque">Empaque</SelectItem>
+                    <SelectItem value="limpieza">Limpieza</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
               </FormItem>
             )}
           />
         </div>
 
-        <div className="flex justify-end pt-4">
-          <Button type="submit">Guardar Producto</Button>
+        <div className="flex justify-end pt-4 gap-2">
+          <Button type="button" variant="outline" onClick={onSuccess}>Cancelar</Button>
+          <Button type="submit" disabled={isPending}>
+            {isPending ? 'Guardando...' : (initialData ? 'Actualizar' : 'Guardar')}
+          </Button>
         </div>
       </form>
     </Form>
