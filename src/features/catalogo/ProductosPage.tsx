@@ -13,7 +13,7 @@ import { ProductoForm } from './ProductoForm'
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-const columns: ColumnDef<ProductoRead>[] = [
+
 const getColumns = (
   onEdit: (producto: ProductoRead) => void,
   onDelete: (id: string) => void
