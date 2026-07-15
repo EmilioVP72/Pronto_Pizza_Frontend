@@ -16,6 +16,7 @@ import { NuevoDespachoForm } from './NuevoDespachoForm'
 import { useAuthStore } from '@/stores/authStore'
 import { Printer, Send, Info } from 'lucide-react'
 import { api } from '@/lib/axios'
+import { toast } from 'sonner'
 
 const DespachoActions = ({ despacho, onStatusChange }: { despacho: DespachoRead, onStatusChange: () => void }) => {
   const user = useAuthStore((s) => s.user)
@@ -26,8 +27,10 @@ const DespachoActions = ({ despacho, onStatusChange }: { despacho: DespachoRead,
       setLoading(true)
       await api.patch(`/despachos/${despacho.id}/completar`)
       onStatusChange()
-    } catch (e) {
+      toast.success('Despacho completado con éxito')
+    } catch (e: any) {
       console.error(e)
+      toast.error(e.response?.data?.detail || 'Error al completar el despacho')
     } finally {
       setLoading(false)
     }

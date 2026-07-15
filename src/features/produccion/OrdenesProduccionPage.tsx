@@ -15,6 +15,7 @@ import { NuevaOrdenForm } from './NuevaOrdenForm'
 import { useAuthStore } from '@/stores/authStore'
 import { Printer, CheckCircle, Info } from 'lucide-react'
 import { api } from '@/lib/axios'
+import { toast } from 'sonner'
 
 const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRead, onStatusChange: () => void }) => {
   const user = useAuthStore((s) => s.user)
@@ -36,8 +37,10 @@ const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRe
         notas: "Completado vía UI"
       })
       onStatusChange()
-    } catch (e) {
+      toast.success('Orden de producción finalizada con éxito')
+    } catch (e: any) {
       console.error(e)
+      toast.error(e.response?.data?.detail || 'Error al finalizar la orden')
     } finally {
       setLoading(false)
     }

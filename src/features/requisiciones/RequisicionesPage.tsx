@@ -16,6 +16,7 @@ import { NuevaRequisicionForm } from './NuevaRequisicionForm'
 
 import { useAuthStore } from '@/stores/authStore'
 import { CheckCircle, Truck, PackageCheck, Ban } from 'lucide-react'
+import { toast } from 'sonner'
 
 const RequisicionActions = ({ requisicion, onStatusChange }: { requisicion: RequisicionRead, onStatusChange: () => void }) => {
   const user = useAuthStore((s) => s.user)
@@ -26,8 +27,10 @@ const RequisicionActions = ({ requisicion, onStatusChange }: { requisicion: Requ
       setLoading(true)
       await api.patch(`/requisiciones/${requisicion.id}/${action}`)
       onStatusChange()
-    } catch (e) {
+      toast.success('Requisición actualizada con éxito')
+    } catch (e: any) {
       console.error(e)
+      toast.error(e.response?.data?.detail || 'Error al actualizar la requisición')
     } finally {
       setLoading(false)
     }

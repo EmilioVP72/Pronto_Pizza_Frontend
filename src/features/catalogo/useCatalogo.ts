@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
+import { toast } from 'sonner'
 import type { ProductoRead, ProductoCreate } from './catalogo.types'
 import type { PaginatedResponse } from '@/types/api'
 
@@ -29,8 +30,12 @@ export const useCrearProducto = () => {
       return res.data
     },
     onSuccess: () => {
+      toast.success('Producto creado exitosamente')
       queryClient.invalidateQueries({ queryKey: catalogoKeys.lists() })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al crear producto')
+    }
   })
 }
 
@@ -42,8 +47,12 @@ export const useActualizarProducto = () => {
       return res.data
     },
     onSuccess: () => {
+      toast.success('Producto actualizado exitosamente')
       queryClient.invalidateQueries({ queryKey: catalogoKeys.lists() })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al actualizar producto')
+    }
   })
 }
 
@@ -54,7 +63,11 @@ export const useEliminarProducto = () => {
       await api.delete(`/productos/${id}`)
     },
     onSuccess: () => {
+      toast.success('Producto desactivado exitosamente')
       queryClient.invalidateQueries({ queryKey: catalogoKeys.lists() })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al desactivar producto')
+    }
   })
 }
