@@ -1,10 +1,34 @@
+import { useEffect, useState } from 'react'
 import { useAuthStore } from '@/stores/authStore'
 import { ModuleCard } from '@/components/ui/ModuleCard'
-import { Package, ShoppingCart, Truck, Factory, Calculator, Users, ClipboardList } from 'lucide-react'
+import { Package, ShoppingCart, Truck, Factory, Calculator, Users, ClipboardList, Clock, DollarSign, ArrowUpRight } from 'lucide-react'
+import { api } from '@/lib/axios'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+interface DashboardData {
+  valor_inventario_por_sucursal: { sucursal: string; valor: number }[]
+  sla_procesamiento: { sla_promedio_horas: number }
+  rotacion_top_5: { producto: string; cantidad: number }[]
+}
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
   const role = user?.rol || ''
+  const [kpiData, setKpiData] = useState<DashboardData | null>(null)
+
+  useEffect(() => {
+    const fetchKpis = async () => {
+      try {
+        const res = await api.get('/kpis/dashboard')
+        setKpiData(res.data)
+      } catch (error) {
+        console.error('Error fetching KPIs', error)
+      }
+    }
+    if (['administrador', 'contador'].includes(role)) {
+      fetchKpis()
+    }
+  }, [role])
 
   const allModules = [
     {
@@ -73,6 +97,8 @@ export default function DashboardPage() {
   ]
 
   const visibleModules = allModules.filter(m => m.allowedRoles.includes(role))
+  
+  const totalValor = kpiData?.valor_inventario_por_sucursal.reduce((acc, curr) => acc + curr.valor, 0) || 0
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -85,7 +111,56 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {kpiData && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
+              <DollarSign className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">${totalValor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <p className="text-xs text-muted-foreground mt-1">Activo en todas las sucursales</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">SLA de Procesamiento</CardTitle>
+              <Clock className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{kpiData.sla_procesamiento.sla_promedio_horas} hrs</div>
+              <p className="text-xs text-muted-foreground mt-1">Tiempo promedio de requisiciones</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Top Salidas / Merma</CardTitle>
+              <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-sm font-medium">
+                {kpiData.rotacion_top_5.length > 0 ? (
+                  <div className="space-y-1 mt-1">
+                    {kpiData.rotacion_top_5.slice(0, 2).map((item, idx) => (
+                      <div key={idx} className="flex justify-between">
+                        <span className="truncate max-w-[120px]">{item.producto}</span>
+                        <span className="font-bold">{item.cantidad.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-2xl font-bold text-muted-foreground">-</span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pt-4">
         {visibleModules.map((module) => (
           <ModuleCard
             key={module.id}
