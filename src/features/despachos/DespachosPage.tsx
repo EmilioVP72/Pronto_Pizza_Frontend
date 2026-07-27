@@ -36,8 +36,23 @@ const DespachoActions = ({ despacho, onStatusChange }: { despacho: DespachoRead,
     }
   }
 
-  const handlePrint = () => {
-    alert(`Imprimiendo ${despacho.tipo_documento} (Folio: ${despacho.folio})...`)
+  const handlePrint = async () => {
+    try {
+      setLoading(true)
+      const res = await api.get(`/despachos/${despacho.id}/pdf`, { responseType: 'blob' })
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Despacho_${despacho.folio_documento || despacho.id}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode?.removeChild(link)
+    } catch (e) {
+      console.error(e)
+      toast.error('Error al generar PDF')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -61,11 +76,11 @@ const DespachoActions = ({ despacho, onStatusChange }: { despacho: DespachoRead,
 
 const columns = (onStatusChange: () => void): ColumnDef<DespachoRead>[] => [
   {
-    accessorKey: 'folio',
+    accessorKey: 'folio_documento',
     header: 'Folio',
     cell: ({ row }) => (
       <Link to={`/despachos/${row.original.id}`} className="font-medium text-primary hover:underline">
-        {row.original.folio}
+        {row.original.folio_documento || 'Sin Folio'}
       </Link>
     ),
   },

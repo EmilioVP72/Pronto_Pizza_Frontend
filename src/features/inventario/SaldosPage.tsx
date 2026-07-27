@@ -9,27 +9,38 @@ import { Settings2 } from 'lucide-react'
 import { api } from '@/lib/axios'
 import { useAuthStore } from '@/stores/authStore'
 
+import { toast } from 'sonner'
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 
 const ParametrosActions = ({ row, user }: { row: any, user: any }) => {
   const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [pReorden, setPReorden] = useState("10");
+  const [sMaximo, setSMaximo] = useState("50");
 
   const handleEditarParametros = async () => {
-    const pReordenStr = window.prompt(`Punto de Reorden para ${row.original.producto_nombre}:`, "10");
-    if (!pReordenStr) return;
-    const sMaxStr = window.prompt(`Stock Máximo para ${row.original.producto_nombre}:`, "50");
-    if (!sMaxStr) return;
+    const pr = parseFloat(pReorden);
+    const sm = parseFloat(sMaximo);
+    if (isNaN(pr) || isNaN(sm)) {
+      toast.error("Valores inválidos");
+      return;
+    }
 
     try {
       setLoading(true);
       await api.patch('/inventario/parametros', {
         producto_id: row.original.producto_id,
-        punto_reorden: parseFloat(pReordenStr),
-        stock_maximo: parseFloat(sMaxStr)
+        punto_reorden: pr,
+        stock_maximo: sm
       });
-      alert("Parámetros actualizados");
+      toast.success("Parámetros actualizados");
+      setIsOpen(false);
     } catch (e) {
       console.error(e);
-      alert("Error actualizando");
+      toast.error("Error actualizando");
     } finally {
       setLoading(false);
     }
@@ -38,9 +49,31 @@ const ParametrosActions = ({ row, user }: { row: any, user: any }) => {
   return (
     <div className="flex gap-2 items-center">
       {['administrador', 'contador'].includes(user?.rol || '') && (
-        <Button variant="outline" size="sm" onClick={handleEditarParametros} disabled={loading}>
-          <Settings2 className="w-4 h-4 mr-1" /> Editar Parámetros
-        </Button>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <Settings2 className="w-4 h-4 mr-1" /> Editar Parámetros
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar Parámetros - {row.original.producto_nombre}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="reorden">Punto de Reorden</Label>
+                <Input id="reorden" value={pReorden} onChange={(e) => setPReorden(e.target.value)} type="number" step="0.01" />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="maximo">Stock Máximo</Label>
+                <Input id="maximo" value={sMaximo} onChange={(e) => setSMaximo(e.target.value)} type="number" step="0.01" />
+              </div>
+              <Button onClick={handleEditarParametros} disabled={loading}>
+                Guardar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

@@ -15,8 +15,8 @@ export const useOrdenesProduccion = (page = 1, size = 20) => {
   return useQuery({
     queryKey: produccionKeys.list({ page, size }),
     queryFn: async () => {
-      const { data } = await api.get<PaginatedResponse<OrdenProduccionRead>>('/ordenes-produccion/', {
-        params: { page, size },
+      const { data } = await api.get<PaginatedResponse<OrdenProduccionRead>>('/produccion/ordenes', {
+        params: { page, size: 20 },
       })
       return data
     },
@@ -27,7 +27,7 @@ export const useCrearOrdenProduccion = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: OrdenProduccionCreate) => {
-      const { data } = await api.post<OrdenProduccionRead>('/ordenes-produccion/', payload)
+      const { data } = await api.post<OrdenProduccionRead>('/produccion/ordenes', payload)
       return data
     },
     onSuccess: () => {

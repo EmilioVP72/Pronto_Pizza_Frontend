@@ -17,16 +17,19 @@ import { Printer, CheckCircle, Info } from 'lucide-react'
 import { api } from '@/lib/axios'
 import { toast } from 'sonner'
 
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
 const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRead, onStatusChange: () => void }) => {
   const user = useAuthStore((s) => s.user)
   const [loading, setLoading] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [cantidad, setCantidad] = useState("1")
 
   const handleCompletar = async () => {
-    const qtyStr = window.prompt(`Ingrese la cantidad real producida para el folio ${orden.folio}:`, "1")
-    if (!qtyStr) return
-    const cantidad_real = parseFloat(qtyStr)
+    const cantidad_real = parseFloat(cantidad)
     if (isNaN(cantidad_real) || cantidad_real <= 0) {
-      alert("Cantidad inválida")
+      toast.error("Cantidad inválida")
       return
     }
 
@@ -38,6 +41,7 @@ const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRe
       })
       onStatusChange()
       toast.success('Orden de producción finalizada con éxito')
+      setIsOpen(false)
     } catch (e: any) {
       console.error(e)
       toast.error(e.response?.data?.detail || 'Error al finalizar la orden')
@@ -47,15 +51,33 @@ const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRe
   }
 
   const handlePrint = () => {
-    alert(`Imprimiendo Etiqueta para Lote: ${orden.folio}...`)
+    toast.info(`Imprimiendo Etiqueta para Lote: ${orden.folio}...`)
   }
 
   return (
     <div className="flex gap-2 items-center">
       {['almacenista', 'administrador'].includes(user?.rol || '') && orden.estatus === 'programada' && (
-        <Button variant="default" size="sm" onClick={handleCompletar} disabled={loading}>
-          <CheckCircle className="w-4 h-4 mr-1" /> Finalizar Lote
-        </Button>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+          <DialogTrigger asChild>
+            <Button variant="default" size="sm" disabled={loading}>
+              <CheckCircle className="w-4 h-4 mr-1" /> Finalizar Lote
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Finalizar Lote - {orden.folio}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="cantidad">Cantidad Real Producida</Label>
+                <Input id="cantidad" value={cantidad} onChange={(e) => setCantidad(e.target.value)} type="number" step="0.01" />
+              </div>
+              <Button onClick={handleCompletar} disabled={loading}>
+                Confirmar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {orden.estatus === 'completada' && (

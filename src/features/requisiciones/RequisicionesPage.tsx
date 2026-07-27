@@ -15,7 +15,7 @@ import { usePermissions } from '@/hooks/usePermissions'
 import { NuevaRequisicionForm } from './NuevaRequisicionForm'
 
 import { useAuthStore } from '@/stores/authStore'
-import { CheckCircle, Truck, PackageCheck, Ban } from 'lucide-react'
+import { CheckCircle, Truck, PackageCheck, Ban, Printer, Send } from 'lucide-react'
 import { toast } from 'sonner'
 
 const RequisicionActions = ({ requisicion, onStatusChange }: { requisicion: RequisicionRead, onStatusChange: () => void }) => {
@@ -36,11 +36,41 @@ const RequisicionActions = ({ requisicion, onStatusChange }: { requisicion: Requ
     }
   }
 
+  const handlePrint = async () => {
+    try {
+      setLoading(true)
+      const res = await api.get(`/requisiciones/${requisicion.id}/pdf`, { responseType: 'blob' })
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `Requisicion_${requisicion.folio || requisicion.id}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode?.removeChild(link)
+    } catch (e) {
+      console.error(e)
+      toast.error('Error al generar PDF')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="flex gap-2 items-center">
       <Link to={`/requisiciones/${requisicion.id}`}>
         <Button variant="outline" size="sm">Detalles</Button>
       </Link>
+      
+      <Button variant="outline" size="sm" onClick={handlePrint} disabled={loading}>
+        <Printer className="w-4 h-4" />
+      </Button>
+
+      {/* Draft Actions */}
+      {['encargado_sucursal', 'almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'borrador' && (
+        <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleAction('enviar')} disabled={loading}>
+          <Send className="w-4 h-4 mr-1" /> Enviar
+        </Button>
+      )}
       
       {/* Almacenista Actions */}
       {['almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'enviada' && (
