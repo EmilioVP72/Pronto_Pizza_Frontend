@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { api } from '@/lib/axios'
 import type { RequisicionRead, RequisicionCreate, RequisicionDetalleRead } from './requisiciones.types'
 import type { PaginatedResponse } from '@/types/api'
@@ -31,8 +32,12 @@ export const useCrearRequisicion = () => {
       return data
     },
     onSuccess: () => {
+      toast.success('Requisición creada exitosamente')
       queryClient.invalidateQueries({ queryKey: requisicionKeys.lists() })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al crear requisición')
+    }
   })
 }
 
@@ -55,8 +60,12 @@ export const useAprobarRequisicion = () => {
       return data
     },
     onSuccess: (_, id) => {
+      toast.success('Requisición aprobada')
       queryClient.invalidateQueries({ queryKey: requisicionKeys.detail(id) })
       queryClient.invalidateQueries({ queryKey: requisicionKeys.lists() })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al aprobar requisición')
+    }
   })
 }

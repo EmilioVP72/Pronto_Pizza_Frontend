@@ -27,10 +27,10 @@ export default function DespachoDetallePage() {
   return (
     <div>
       <PageHeader
-        title={`Despacho ${despacho.folio}`}
+        title={`Despacho ${despacho.folio_documento}`}
         breadcrumbs={[
           { label: 'Despachos', href: '/despachos' },
-          { label: despacho.folio },
+          { label: despacho.folio_documento || 'Detalle' },
         ]}
         actions={
           <>

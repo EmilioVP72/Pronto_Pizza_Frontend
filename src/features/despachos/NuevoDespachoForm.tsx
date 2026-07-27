@@ -7,6 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useSucursales, useProductosBase } from '@/features/shared/useCatalogos'
+import { toast } from 'sonner'
 // Assuming we have a hook for useCrearDespacho which we might need to add to useDespachos.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
@@ -33,7 +34,13 @@ const useCrearDespacho = () => {
       const { data } = await api.post('/despachos/', payload)
       return data
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: despachoKeys.lists() }),
+    onSuccess: () => {
+      toast.success('Despacho generado exitosamente')
+      queryClient.invalidateQueries({ queryKey: despachoKeys.lists() })
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al generar el despacho')
+    }
   })
 }
 

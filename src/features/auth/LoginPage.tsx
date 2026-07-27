@@ -55,18 +55,24 @@ export const LoginPage = () => {
       if (!data.session) throw new Error('No se obtuvo sesión')
 
       const token = data.session.access_token
-      
-      // Get the user data from our backend using the token
-      // Wait, standard approach: fetch the user profile from /auth/me or similar, 
-      // but if we don't have it, we just decode or fetch from /api/v1/usuarios/me
-      // The context says: backend verifies JWT, extracts sub, gets user.
-      // So we call a generic endpoint or a "me" endpoint. Let's assume /api/v1/usuarios/me exists.
-      
-      const response = await api.get('/usuarios/me', {
+
+      // Fetch the full user profile from our backend
+      const response = await api.get('/organizacion/usuarios/me', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      
-      setAuth(response.data, token)
+
+      // Backend returns nested objects: rol: { nombre, id }, sucursal: { nombre, codigo, id }
+      // AuthStore expects flat fields, so we map them here
+      const raw = response.data
+      setAuth({
+        id: raw.id,
+        nombre_completo: raw.nombre_completo,
+        email: raw.email,
+        sucursal_id: raw.sucursal_id,
+        sucursal_nombre: raw.sucursal?.nombre ?? '',
+        sucursal_codigo: raw.sucursal?.codigo ?? '',
+        rol: raw.rol?.nombre ?? '',
+      }, token)
       navigate('/')
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión')
@@ -124,25 +130,29 @@ export const LoginPage = () => {
 
             {/* Dev Login Bypass para ver funcionalidades rápidamente */}
             {import.meta.env.DEV && (
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full mt-2 border-primary text-primary hover:bg-primary/10"
-                onClick={() => {
-                  setAuth({
-                    id: '33333333-3333-3333-3333-333333333333',
-                    nombre_completo: 'Admin Pronto Pizza',
-                    email: 'admin@prontopizza.com',
-                    sucursal_id: '22222222-2222-2222-2222-222222222222',
-                    sucursal_nombre: 'Comisariato Matriz',
-                    sucursal_codigo: 'MTZ',
-                    rol: 'administrador'
-                  }, 'dummy-dev-token')
-                  navigate('/')
-                }}
-              >
-                Entrar como Admin (Dev Bypass)
-              </Button>
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t">
+                <p className="text-xs text-center text-muted-foreground font-semibold">Bypass de Desarrollo (Sin contraseña)</p>
+                
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="w-full border-primary text-primary hover:bg-primary/10"
+                  onClick={() => {
+                    setAuth({
+                      id: '33333333-3333-3333-3333-333333333333',
+                      nombre_completo: 'Admin Pronto Pizza',
+                      email: 'admin@prontopizza.com',
+                      sucursal_id: '22222222-2222-2222-2222-222222222222',
+                      sucursal_nombre: 'Comisariato Matriz',
+                      sucursal_codigo: 'MTZ',
+                      rol: 'administrador'
+                    }, 'dummy-dev-token')
+                    navigate('/')
+                  }}
+                >
+                  👑 Administrador
+                </Button>
+              </div>
             )}
           </form>
         </Form>

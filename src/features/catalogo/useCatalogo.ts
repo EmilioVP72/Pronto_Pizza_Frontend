@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/axios'
-import type { ProductoRead } from './catalogo.types'
+import { toast } from 'sonner'
+import type { ProductoRead, ProductoCreate } from './catalogo.types'
 import type { PaginatedResponse } from '@/types/api'
 
 export const catalogoKeys = {
@@ -18,5 +19,55 @@ export const useProductos = (page = 1, size = 20) => {
       })
       return data
     },
+  })
+}
+
+export const useCrearProducto = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (data: ProductoCreate) => {
+      const res = await api.post<ProductoRead>('/productos/', data)
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success('Producto creado exitosamente')
+      queryClient.invalidateQueries({ queryKey: catalogoKeys.lists() })
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al crear producto')
+    }
+  })
+}
+
+export const useActualizarProducto = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<ProductoCreate> }) => {
+      const res = await api.patch<ProductoRead>(`/productos/${id}`, data)
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success('Producto actualizado exitosamente')
+      queryClient.invalidateQueries({ queryKey: catalogoKeys.lists() })
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al actualizar producto')
+    }
+  })
+}
+
+export const useEliminarProducto = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await api.delete(`/productos/${id}`)
+    },
+    onSuccess: () => {
+      toast.success('Producto desactivado exitosamente')
+      queryClient.invalidateQueries({ queryKey: catalogoKeys.lists() })
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || 'Error al desactivar producto')
+    }
   })
 }

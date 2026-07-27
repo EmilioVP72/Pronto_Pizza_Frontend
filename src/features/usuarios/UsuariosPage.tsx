@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Plus, Users } from 'lucide-react'
+import { Plus, Users, Edit, Trash } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import { useUsuarios } from './useUsuarios'
+import { useUsuarios, useEliminarUsuario } from './useUsuarios'
 import type { UsuarioRead } from './usuarios.types'
 import { PageHeader } from '@/components/shared/PageHeader'
 import { DataTable } from '@/components/shared/DataTable'
@@ -12,7 +12,28 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { UsuarioForm } from './UsuarioForm'
 import { usePermissions } from '@/hooks/usePermissions'
 
-const columns: ColumnDef<UsuarioRead>[] = [
+export default function UsuariosPage() {
+  const [page, setPage] = useState(1)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [usuarioEnEdicion, setUsuarioEnEdicion] = useState<UsuarioRead | undefined>()
+  
+  const { data, isLoading } = useUsuarios(page)
+  const { mutate: eliminarUsuario } = useEliminarUsuario()
+  
+  const canManage = true
+
+  const handleEdit = (u: UsuarioRead) => {
+    setUsuarioEnEdicion(u)
+    setIsModalOpen(true)
+  }
+
+  const handleDelete = (id: string) => {
+    if (confirm('¿Estás seguro de eliminar este usuario? Esta acción removerá su acceso inmediatamente.')) {
+      eliminarUsuario(id)
+    }
+  }
+
+  const columns: ColumnDef<UsuarioRead>[] = [
   {
     accessorKey: 'nombre_completo',
     header: 'Nombre',
@@ -23,27 +44,35 @@ const columns: ColumnDef<UsuarioRead>[] = [
     header: 'Email',
   },
   {
-    accessorKey: 'sucursal_nombre',
+    accessorKey: 'sucursal.nombre',
     header: 'Sucursal',
+    cell: ({ row }) => <span>{row.original.sucursal?.nombre || 'Sin sucursal'}</span>,
   },
   {
-    accessorKey: 'rol_nombre',
+    accessorKey: 'rol.nombre',
     header: 'Rol',
-    cell: ({ row }) => <StatusBadge estatus={row.original.rol_nombre || 'N/A'} />,
+    cell: ({ row }) => <StatusBadge estatus={row.original.rol?.nombre || 'N/A'} />,
   },
   {
     accessorKey: 'activo',
     header: 'Estatus',
     cell: ({ row }) => <StatusBadge estatus={row.original.activo ? 'activo' : 'inactivo'} />,
   },
-]
-
-export default function UsuariosPage() {
-  const [page, setPage] = useState(1)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const { data, isLoading } = useUsuarios(page)
-  // Assumes only admin can access this page
-  const canManage = true
+    {
+      id: 'acciones',
+      header: 'Acciones',
+      cell: ({ row }) => (
+        <div className="flex gap-2">
+          <Button variant="ghost" size="icon" onClick={() => handleEdit(row.original)}>
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(row.original.id)}>
+            <Trash className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ]
 
   return (
     <div>
@@ -52,7 +81,13 @@ export default function UsuariosPage() {
         breadcrumbs={[{ label: 'Administración' }, { label: 'Usuarios' }]}
         actions={
           canManage && (
-            <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+            <Dialog 
+              open={isModalOpen} 
+              onOpenChange={(open) => {
+                setIsModalOpen(open)
+                if (!open) setUsuarioEnEdicion(undefined)
+              }}
+            >
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
@@ -61,9 +96,15 @@ export default function UsuariosPage() {
               </DialogTrigger>
               <DialogContent className="max-w-xl">
                 <DialogHeader>
-                  <DialogTitle>Registrar Nuevo Usuario</DialogTitle>
+                  <DialogTitle>{usuarioEnEdicion ? 'Editar Usuario' : 'Registrar Nuevo Usuario'}</DialogTitle>
                 </DialogHeader>
-                <UsuarioForm onSuccess={() => setIsModalOpen(false)} />
+                <UsuarioForm 
+                  usuario={usuarioEnEdicion}
+                  onSuccess={() => {
+                    setIsModalOpen(false)
+                    setUsuarioEnEdicion(undefined)
+                  }} 
+                />
               </DialogContent>
             </Dialog>
           )

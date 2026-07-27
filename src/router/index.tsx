@@ -4,6 +4,8 @@ import { AppShell } from '@/components/layout/AppShell'
 import { LoginPage } from '@/features/auth/LoginPage'
 
 // Catálogo
+import DashboardPage from '@/features/dashboard/DashboardPage'
+import { RoleGuard } from '@/components/layout/RoleGuard'
 import ProductosPage from '@/features/catalogo/ProductosPage'
 
 // Inventario
@@ -27,6 +29,12 @@ import ExportacionesPage from '@/features/contabilidad/ExportacionesPage'
 
 // Administración
 import UsuariosPage from '@/features/usuarios/UsuariosPage'
+import BitacoraPage from '@/features/administracion/BitacoraPage'
+
+// Gestión
+import GestionDashboardPage from '@/features/gestion/GestionDashboardPage'
+import SucursalesCrud from '@/features/gestion/SucursalesCrud'
+import RolesCrud from '@/features/gestion/RolesCrud'
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = useAuthStore((s) => s.token)
@@ -39,32 +47,83 @@ export const router = createBrowserRouter([
     path: '/',
     element: <PrivateRoute><AppShell /></PrivateRoute>,
     children: [
-      { index: true, element: <Navigate to="/inventario/saldos" replace /> },
+      { index: true, element: <DashboardPage /> },
       
       // Catálogo
-      { path: 'catalogo/productos', element: <ProductosPage /> },
+      { 
+        path: 'catalogo/productos', 
+        element: <RoleGuard allowedRoles={['administrador']}><ProductosPage /></RoleGuard> 
+      },
       
       // Inventario
-      { path: 'inventario/saldos', element: <SaldosPage /> },
-      { path: 'inventario/movimientos', element: <MovimientosPage /> },
-      { path: 'inventario/bajo-minimo', element: <ProductosBajoMinimoPage /> },
+      { 
+        path: 'inventario/saldos', 
+        element: <RoleGuard allowedRoles={['administrador', 'encargado_sucursal', 'almacenista', 'contador']}><SaldosPage /></RoleGuard> 
+      },
+      { 
+        path: 'inventario/movimientos', 
+        element: <RoleGuard allowedRoles={['administrador', 'almacenista', 'contador']}><MovimientosPage /></RoleGuard> 
+      },
+      { 
+        path: 'inventario/bajo-minimo', 
+        element: <RoleGuard allowedRoles={['administrador', 'encargado_sucursal', 'almacenista']}><ProductosBajoMinimoPage /></RoleGuard> 
+      },
       
       // Requisiciones
-      { path: 'requisiciones', element: <RequisicionesPage /> },
-      { path: 'requisiciones/:id', element: <RequisicionDetallePage /> },
+      { 
+        path: 'requisiciones', 
+        element: <RoleGuard allowedRoles={['administrador', 'encargado_sucursal', 'almacenista']}><RequisicionesPage /></RoleGuard> 
+      },
+      { 
+        path: 'requisiciones/:id', 
+        element: <RoleGuard allowedRoles={['administrador', 'encargado_sucursal', 'almacenista']}><RequisicionDetallePage /></RoleGuard> 
+      },
       
       // Despachos
-      { path: 'despachos', element: <DespachosPage /> },
-      { path: 'despachos/:id', element: <DespachoDetallePage /> },
+      { 
+        path: 'despachos', 
+        element: <RoleGuard allowedRoles={['administrador', 'almacenista', 'contador']}><DespachosPage /></RoleGuard> 
+      },
+      { 
+        path: 'despachos/:id', 
+        element: <RoleGuard allowedRoles={['administrador', 'almacenista', 'contador']}><DespachoDetallePage /></RoleGuard> 
+      },
       
       // Producción
-      { path: 'produccion', element: <OrdenesProduccionPage /> },
+      { 
+        path: 'produccion', 
+        element: <RoleGuard allowedRoles={['administrador', 'almacenista']}><OrdenesProduccionPage /></RoleGuard> 
+      },
       
       // Contabilidad
-      { path: 'contabilidad/exportaciones', element: <ExportacionesPage /> },
+      { 
+        path: 'contabilidad/exportaciones', 
+        element: <RoleGuard allowedRoles={['administrador', 'contador']}><ExportacionesPage /></RoleGuard> 
+      },
 
       // Administración
-      { path: 'administracion/usuarios', element: <UsuariosPage /> },
+      { 
+        path: 'administracion/usuarios', 
+        element: <RoleGuard allowedRoles={['administrador']}><UsuariosPage /></RoleGuard> 
+      },
+      { 
+        path: 'administracion/bitacora', 
+        element: <RoleGuard allowedRoles={['administrador']}><BitacoraPage /></RoleGuard> 
+      },
+      
+      // Gestión
+      { 
+        path: 'gestion', 
+        element: <RoleGuard allowedRoles={['administrador']}><GestionDashboardPage /></RoleGuard> 
+      },
+      { 
+        path: 'gestion/sucursales', 
+        element: <RoleGuard allowedRoles={['administrador']}><SucursalesCrud /></RoleGuard> 
+      },
+      { 
+        path: 'gestion/roles', 
+        element: <RoleGuard allowedRoles={['administrador']}><RolesCrud /></RoleGuard> 
+      },
     ],
   },
 ])

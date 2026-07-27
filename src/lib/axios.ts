@@ -13,9 +13,31 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Interceptor: manejo global de 401
+// Interceptor: manejo global de 401 y adaptación de paginación
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    const url = response.config.url || ''
+    const isArrayExpected = 
+      url.includes('/productos/categorias') || 
+      url.includes('/productos/unidades') || 
+      url.includes('/productos/base') || 
+      url.includes('/organizacion/roles') || 
+      url.includes('/organizacion/sucursales') ||
+      url.includes('/organizacion/empresas') ||
+      url.includes('/notificaciones')
+
+    // Si el backend regresa un arreglo plano pero el frontend espera PaginatedResponse
+    if (Array.isArray(response.data) && !isArrayExpected) {
+      response.data = {
+        items: response.data,
+        total: response.data.length,
+        page: 1,
+        size: response.data.length || 20,
+        pages: 1
+      }
+    }
+    return response
+  },
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout()
