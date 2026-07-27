@@ -22,7 +22,9 @@ api.interceptors.response.use(
       url.includes('/productos/unidades') || 
       url.includes('/productos/base') || 
       url.includes('/organizacion/roles') || 
-      url.includes('/organizacion/sucursales')
+      url.includes('/organizacion/sucursales') ||
+      url.includes('/organizacion/empresas') ||
+      url.includes('/notificaciones')
 
     // Si el backend regresa un arreglo plano pero el frontend espera PaginatedResponse
     if (Array.isArray(response.data) && !isArrayExpected) {
