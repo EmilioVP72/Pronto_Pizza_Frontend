@@ -56,7 +56,7 @@ const ProduccionActions = ({ orden, onStatusChange }: { orden: OrdenProduccionRe
 
   return (
     <div className="flex gap-2 items-center">
-      {['almacenista', 'administrador'].includes(user?.rol || '') && orden.estatus === 'programada' && (
+      {['almacenista', 'administrador'].includes((user?.rol || '').toLowerCase()) && orden.estatus === 'programada' && (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button variant="default" size="sm" disabled={loading}>

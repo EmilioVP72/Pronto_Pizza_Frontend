@@ -48,7 +48,7 @@ const ParametrosActions = ({ row, user }: { row: any, user: any }) => {
 
   return (
     <div className="flex gap-2 items-center">
-      {['administrador', 'contador'].includes(user?.rol || '') && (
+      {['administrador', 'contador'].includes((user?.rol || '').toLowerCase()) && (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">

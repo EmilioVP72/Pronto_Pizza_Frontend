@@ -71,7 +71,7 @@ export const LoginPage = () => {
         sucursal_id: raw.sucursal_id,
         sucursal_nombre: raw.sucursal?.nombre ?? '',
         sucursal_codigo: raw.sucursal?.codigo ?? '',
-        rol: raw.rol?.nombre ?? '',
+        rol: (raw.rol?.nombre ?? '').toLowerCase(),
       }, token)
       navigate('/')
     } catch (err: any) {

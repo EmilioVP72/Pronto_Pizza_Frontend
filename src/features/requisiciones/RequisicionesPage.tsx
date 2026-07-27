@@ -66,27 +66,27 @@ const RequisicionActions = ({ requisicion, onStatusChange }: { requisicion: Requ
       </Button>
 
       {/* Draft Actions */}
-      {['encargado_sucursal', 'almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'borrador' && (
+      {['encargado_sucursal', 'almacenista', 'administrador'].includes((user?.rol || '').toLowerCase()) && requisicion.estatus === 'borrador' && (
         <Button variant="default" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white" onClick={() => handleAction('enviar')} disabled={loading}>
           <Send className="w-4 h-4 mr-1" /> Enviar
         </Button>
       )}
       
       {/* Almacenista Actions */}
-      {['almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'enviada' && (
+      {['almacenista', 'administrador'].includes((user?.rol || '').toLowerCase()) && requisicion.estatus === 'enviada' && (
         <Button variant="default" size="sm" onClick={() => handleAction('aprobar')} disabled={loading}>
           <CheckCircle className="w-4 h-4 mr-1" /> Aprobar
         </Button>
       )}
       
-      {['almacenista', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'aprobada' && (
+      {['almacenista', 'administrador'].includes((user?.rol || '').toLowerCase()) && requisicion.estatus === 'aprobada' && (
         <Button variant="secondary" size="sm" className="bg-orange-500 text-white hover:bg-orange-600" onClick={() => handleAction('surtir')} disabled={loading}>
           <Truck className="w-4 h-4 mr-1" /> Surtir
         </Button>
       )}
 
       {/* Encargado Actions */}
-      {['encargado_sucursal', 'administrador'].includes(user?.rol || '') && requisicion.estatus === 'surtida' && (
+      {['encargado_sucursal', 'administrador'].includes((user?.rol || '').toLowerCase()) && requisicion.estatus === 'surtida' && (
         <Button variant="default" size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => handleAction('cerrar')} disabled={loading}>
           <PackageCheck className="w-4 h-4 mr-1" /> Recibido
         </Button>

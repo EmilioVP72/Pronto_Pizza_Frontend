@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/stores/authStore'
 
 export const usePermissions = () => {
-  const rol = useAuthStore((s) => s.user?.rol)
+  const rol = useAuthStore((s) => s.user?.rol)?.toLowerCase()
 
   return {
     canCreateRequisicion: ['administrador', 'almacenista', 'encargado_sucursal'].includes(rol ?? ''),

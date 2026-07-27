@@ -65,7 +65,7 @@ const DespachoActions = ({ despacho, onStatusChange }: { despacho: DespachoRead,
         <Printer className="w-4 h-4" />
       </Button>
 
-      {['almacenista', 'administrador'].includes(user?.rol || '') && despacho.estatus === 'pendiente' && (
+      {['almacenista', 'administrador'].includes((user?.rol || '').toLowerCase()) && despacho.estatus === 'pendiente' && (
         <Button variant="default" size="sm" onClick={handleCompletar} disabled={loading}>
           <Send className="w-4 h-4 mr-1" /> Completar
         </Button>

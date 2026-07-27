@@ -21,7 +21,7 @@ const navItems = [
 export const Sidebar = () => {
   const location = useLocation()
   const user = useAuthStore((s) => s.user)
-  const role = user?.rol || ''
+  const role = (user?.rol || '').toLowerCase()
   
   const visibleNavItems = navItems.filter(item => item.roles.includes(role))
 

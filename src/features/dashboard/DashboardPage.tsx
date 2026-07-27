@@ -13,7 +13,7 @@ interface DashboardData {
 
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user)
-  const role = user?.rol || ''
+  const role = (user?.rol || '').toLowerCase()
   const [kpiData, setKpiData] = useState<DashboardData | null>(null)
 
   useEffect(() => {
