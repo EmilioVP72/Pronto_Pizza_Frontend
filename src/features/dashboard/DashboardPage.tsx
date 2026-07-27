@@ -104,7 +104,7 @@ export default function DashboardPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col space-y-2">
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          ¡Hola, {user?.nombre_completo.split(' ')[0]}!
+          ¡Hola, {user?.nombre_completo?.split(' ')[0] || 'Usuario'}!
         </h1>
         <p className="text-muted-foreground text-lg">
           Bienvenido a tu espacio de trabajo en <span className="font-medium text-primary">{user?.sucursal_nombre}</span>.
