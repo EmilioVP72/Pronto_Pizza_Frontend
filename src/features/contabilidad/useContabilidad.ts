@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { api } from '@/lib/axios'
 import type { ExportacionContpaqiRead, ExportarRequest } from './contabilidad.types'
 import type { PaginatedResponse } from '@/types/api'
@@ -28,8 +29,12 @@ export const useCrearExportacion = () => {
       return data
     },
     onSuccess: () => {
+      toast.success('Exportación a CONTPAQi generada')
       queryClient.invalidateQueries({ queryKey: contabilidadKeys.exportaciones })
     },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.detail || err.message || 'Error al generar la exportación')
+    }
   })
 }
 
@@ -45,7 +50,9 @@ export const downloadExportacion = async (id: string, filename: string) => {
     document.body.appendChild(link)
     link.click()
     link.remove()
-  } catch (error) {
+    toast.success('Descarga iniciada')
+  } catch (error: any) {
     console.error('Error downloading the export:', error)
+    toast.error('Error al descargar el archivo')
   }
 }

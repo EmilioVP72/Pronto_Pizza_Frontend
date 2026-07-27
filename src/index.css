@@ -13,11 +13,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
     
-    /* Pronto Pizza Red */
-    --primary: 3 73% 48%;
-    --primary-foreground: 0 0% 98%;
+    /* Pronto Pizza Red (McDonalds Red: #DA291C -> ~356 75% 48%) */
+    --primary: 356 75% 48%;
+    --primary-foreground: 0 0% 100%;
     
-    /* Pronto Pizza Yellow */
+    /* Pronto Pizza Yellow (McDonalds Yellow: #FFC72C -> ~44 100% 58%) */
     --secondary: 44 100% 58%;
     --secondary-foreground: 24 9.8% 10%;
     

@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/authStore'
 import { Button } from '@/components/ui/button'
 import { LogOut, User } from 'lucide-react'
+import { NotificationBell } from './NotificationBell'
 
 export const Header = () => {
   const user = useAuthStore((s) => s.user)
@@ -12,6 +13,7 @@ export const Header = () => {
         {/* Placeholder for left side elements if needed */}
       </div>
       <div className="flex items-center gap-4">
+        {user && <NotificationBell />}
         {user && (
           <div className="flex items-center gap-2 text-sm">
             <User className="h-4 w-4 text-muted-foreground" />

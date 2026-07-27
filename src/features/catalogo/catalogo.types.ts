@@ -1,21 +1,17 @@
 export interface ProductoRead {
   id: string
   nombre: string
-  codigo: string
-  categoria_id: string
-  unidad_medida_id: string
-  es_insumo: boolean
-  es_preparado: boolean
-  es_venta: boolean
+  codigo_interno: string
+  tipo_producto: string
+  categoria_id: number
+  unidad_medida_id: number
   activo: boolean
 }
 
 export interface ProductoCreate {
   nombre: string
-  codigo: string
-  categoria_id: string
-  unidad_medida_id: string
-  es_insumo?: boolean
-  es_preparado?: boolean
-  es_venta?: boolean
+  codigo_interno: string
+  tipo_producto: string
+  categoria_id: number
+  unidad_medida_id: number
 }
