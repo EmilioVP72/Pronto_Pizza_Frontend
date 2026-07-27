@@ -31,6 +31,11 @@ import ExportacionesPage from '@/features/contabilidad/ExportacionesPage'
 import UsuariosPage from '@/features/usuarios/UsuariosPage'
 import BitacoraPage from '@/features/administracion/BitacoraPage'
 
+// Gestión
+import GestionDashboardPage from '@/features/gestion/GestionDashboardPage'
+import SucursalesCrud from '@/features/gestion/SucursalesCrud'
+import RolesCrud from '@/features/gestion/RolesCrud'
+
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const token = useAuthStore((s) => s.token)
   return token ? <>{children}</> : <Navigate to="/login" replace />
@@ -104,6 +109,20 @@ export const router = createBrowserRouter([
       { 
         path: 'administracion/bitacora', 
         element: <RoleGuard allowedRoles={['administrador']}><BitacoraPage /></RoleGuard> 
+      },
+      
+      // Gestión
+      { 
+        path: 'gestion', 
+        element: <RoleGuard allowedRoles={['administrador']}><GestionDashboardPage /></RoleGuard> 
+      },
+      { 
+        path: 'gestion/sucursales', 
+        element: <RoleGuard allowedRoles={['administrador']}><SucursalesCrud /></RoleGuard> 
+      },
+      { 
+        path: 'gestion/roles', 
+        element: <RoleGuard allowedRoles={['administrador']}><RolesCrud /></RoleGuard> 
       },
     ],
   },

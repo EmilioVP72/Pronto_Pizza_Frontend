@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Package, ClipboardList, TrendingDown, Pizza, BookOpen, FileSpreadsheet, LayoutDashboard, LogOut, Users, AlertTriangle } from 'lucide-react'
+import { Package, ClipboardList, TrendingDown, Pizza, BookOpen, FileSpreadsheet, LayoutDashboard, LogOut, Users, AlertTriangle, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuthStore } from '@/stores/authStore'
 
@@ -15,6 +15,7 @@ const navItems = [
   { title: 'Exportaciones', href: '/contabilidad/exportaciones', icon: FileSpreadsheet, roles: ['administrador', 'contador'] },
   { title: 'Usuarios', href: '/administracion/usuarios', icon: Users, roles: ['administrador'] },
   { title: 'Bitácora', href: '/administracion/bitacora', icon: ClipboardList, roles: ['administrador'] },
+  { title: 'Gestión del Negocio', href: '/gestion', icon: Settings, roles: ['administrador'] },
 ]
 
 export const Sidebar = () => {
