@@ -25,7 +25,8 @@ export const NotificationBell = () => {
   const fetchNotifications = async () => {
     try {
       const res = await api.get('/notificaciones')
-      setNotifications(res.data)
+      const data = res.data?.items || res.data
+      setNotifications(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching notifications:', error)
     }
@@ -38,12 +39,14 @@ export const NotificationBell = () => {
     return () => clearInterval(interval)
   }, [])
 
-  const unreadCount = notifications.filter((n) => !n.leida).length
+  const unreadCount = Array.isArray(notifications) ? notifications.filter((n) => !n.leida).length : 0
 
   const markAsRead = async (id: string) => {
     try {
       await api.patch(`/notificaciones/${id}/leer`)
-      setNotifications(notifications.map((n) => (n.id === id ? { ...n, leida: true } : n)))
+      if (Array.isArray(notifications)) {
+        setNotifications(notifications.map((n) => (n.id === id ? { ...n, leida: true } : n)))
+      }
     } catch (error) {
       console.error('Error marking as read', error)
     }
@@ -52,7 +55,9 @@ export const NotificationBell = () => {
   const markAllAsRead = async () => {
     try {
       await api.patch('/notificaciones/leer-todas')
-      setNotifications(notifications.map((n) => ({ ...n, leida: true })))
+      if (Array.isArray(notifications)) {
+        setNotifications(notifications.map((n) => ({ ...n, leida: true })))
+      }
     } catch (error) {
       console.error('Error marking all as read', error)
     }
@@ -79,7 +84,7 @@ export const NotificationBell = () => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <div className="max-h-[300px] overflow-y-auto">
-          {notifications.length === 0 ? (
+          {!Array.isArray(notifications) || notifications.length === 0 ? (
             <div className="p-4 text-center text-sm text-muted-foreground">No tienes notificaciones</div>
           ) : (
             notifications.map((n) => (
