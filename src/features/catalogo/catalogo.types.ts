@@ -5,6 +5,8 @@ export interface ProductoRead {
   tipo_producto: string
   categoria_id: number
   unidad_medida_id: number
+  precio_referencia?: number | null
+  clave_contpaqi?: string | null
   activo: boolean
 }
 
@@ -14,4 +16,6 @@ export interface ProductoCreate {
   tipo_producto: string
   categoria_id: number
   unidad_medida_id: number
+  precio_referencia?: number | null
+  clave_contpaqi?: string | null
 }

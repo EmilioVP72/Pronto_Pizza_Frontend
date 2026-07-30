@@ -13,7 +13,6 @@ import { ProductoForm } from './ProductoForm'
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
 
-
 const getColumns = (
   onEdit: (producto: ProductoRead) => void,
   onDelete: (id: string) => void,
@@ -43,6 +42,19 @@ const getColumns = (
       const uni = unidades?.find(u => u.id === row.original.unidad_medida_id)
       return uni ? uni.abreviatura : row.original.unidad_medida_id
     },
+  },
+  {
+    accessorKey: 'precio_referencia',
+    header: 'Precio / Costo',
+    cell: ({ row }) => {
+      const val = row.original.precio_referencia
+      return val ? `$${Number(val).toFixed(2)}` : '-'
+    },
+  },
+  {
+    accessorKey: 'clave_contpaqi',
+    header: 'Cuenta CONTPAQi',
+    cell: ({ row }) => row.original.clave_contpaqi || '-',
   },
   {
     accessorKey: 'tipo_producto',
