@@ -6,7 +6,8 @@ import { api } from '@/lib/axios'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface DashboardData {
-  volumen_inventario_por_sucursal: { sucursal: string; volumen: number }[]
+  valor_inventario_por_sucursal?: { sucursal: string; valor: number }[]
+  volumen_inventario_por_sucursal?: { sucursal: string; volumen: number }[]
   sla_procesamiento: { sla_promedio_horas: number }
   rotacion_top_5: { producto: string; cantidad: number }[]
 }
@@ -98,7 +99,9 @@ export default function DashboardPage() {
 
   const visibleModules = allModules.filter(m => m.allowedRoles.includes(role))
   
-  const totalVolumen = kpiData?.volumen_inventario_por_sucursal.reduce((acc, curr) => acc + curr.volumen, 0) || 0
+  const inventarioList = kpiData?.valor_inventario_por_sucursal || kpiData?.volumen_inventario_por_sucursal || []
+  const isMonetary = !!kpiData?.valor_inventario_por_sucursal
+  const totalInventario = inventarioList.reduce((acc, curr: any) => acc + (curr.valor ?? curr.volumen ?? 0), 0)
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -115,11 +118,17 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Volumen Total en Inventario</CardTitle>
-              <Package className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium">
+                {isMonetary ? 'Valor Total del Inventario' : 'Volumen Total en Inventario'}
+              </CardTitle>
+              {isMonetary ? <DollarSign className="h-4 w-4 text-primary" /> : <Package className="h-4 w-4 text-primary" />}
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalVolumen.toLocaleString(undefined, { maximumFractionDigits: 2 })} uds</div>
+              <div className="text-2xl font-bold">
+                {isMonetary
+                  ? `$${totalInventario.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : `${totalInventario.toLocaleString(undefined, { maximumFractionDigits: 2 })} uds`}
+              </div>
               <p className="text-xs text-muted-foreground mt-1">Activo en todas las sucursales</p>
             </CardContent>
           </Card>
@@ -130,7 +139,7 @@ export default function DashboardPage() {
               <Clock className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpiData.sla_procesamiento.sla_promedio_horas} hrs</div>
+              <div className="text-2xl font-bold">{kpiData.sla_procesamiento?.sla_promedio_horas ?? 0} hrs</div>
               <p className="text-xs text-muted-foreground mt-1">Tiempo promedio de requisiciones</p>
             </CardContent>
           </Card>
@@ -142,7 +151,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-sm font-medium">
-                {kpiData.rotacion_top_5.length > 0 ? (
+                {kpiData.rotacion_top_5 && kpiData.rotacion_top_5.length > 0 ? (
                   <div className="space-y-1 mt-1">
                     {kpiData.rotacion_top_5.slice(0, 2).map((item, idx) => (
                       <div key={idx} className="flex justify-between">
