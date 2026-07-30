@@ -22,6 +22,8 @@ const schema = z.object({
   categoria_id: z.coerce.number().min(1, 'Selecciona una categoría'),
   unidad_medida_id: z.coerce.number().min(1, 'Selecciona una unidad'),
   tipo_producto: z.enum(['insumo', 'preparado', 'empaque', 'limpieza']),
+  precio_referencia: z.coerce.number().optional().nullable(),
+  clave_contpaqi: z.string().optional().nullable(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -46,6 +48,8 @@ export function ProductoForm({ onSuccess, initialData }: ProductoFormProps) {
       categoria_id: initialData?.categoria_id || 0,
       unidad_medida_id: initialData?.unidad_medida_id || 0,
       tipo_producto: (initialData?.tipo_producto as any) || 'insumo',
+      precio_referencia: initialData?.precio_referencia ?? 0,
+      clave_contpaqi: initialData?.clave_contpaqi || '',
     },
   })
 
@@ -142,7 +146,7 @@ export function ProductoForm({ onSuccess, initialData }: ProductoFormProps) {
           />
         </div>
 
-        <div className="grid grid-cols-1 gap-4 mt-4">
+        <div className="grid grid-cols-3 gap-4 mt-4">
           <FormField
             control={form.control}
             name="tipo_producto"
@@ -162,6 +166,32 @@ export function ProductoForm({ onSuccess, initialData }: ProductoFormProps) {
                     <SelectItem value="limpieza">Limpieza</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="precio_referencia"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Precio / Costo ($)</FormLabel>
+                <FormControl>
+                  <Input type="number" step="0.01" placeholder="Ej. 150.00" {...field} value={field.value ?? ''} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="clave_contpaqi"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Cuenta CONTPAQi</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ej. 1150-001-000" {...field} value={field.value ?? ''} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

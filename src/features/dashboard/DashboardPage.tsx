@@ -6,7 +6,7 @@ import { api } from '@/lib/axios'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface DashboardData {
-  valor_inventario_por_sucursal: { sucursal: string; valor: number }[]
+  volumen_inventario_por_sucursal: { sucursal: string; volumen: number }[]
   sla_procesamiento: { sla_promedio_horas: number }
   rotacion_top_5: { producto: string; cantidad: number }[]
 }
@@ -98,7 +98,7 @@ export default function DashboardPage() {
 
   const visibleModules = allModules.filter(m => m.allowedRoles.includes(role))
   
-  const totalValor = kpiData?.valor_inventario_por_sucursal.reduce((acc, curr) => acc + curr.valor, 0) || 0
+  const totalVolumen = kpiData?.volumen_inventario_por_sucursal.reduce((acc, curr) => acc + curr.volumen, 0) || 0
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -115,11 +115,11 @@ export default function DashboardPage() {
         <div className="grid gap-4 md:grid-cols-3">
           <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Valor Total del Inventario</CardTitle>
-              <DollarSign className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-medium">Volumen Total en Inventario</CardTitle>
+              <Package className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalValor.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+              <div className="text-2xl font-bold">{totalVolumen.toLocaleString(undefined, { maximumFractionDigits: 2 })} uds</div>
               <p className="text-xs text-muted-foreground mt-1">Activo en todas las sucursales</p>
             </CardContent>
           </Card>
